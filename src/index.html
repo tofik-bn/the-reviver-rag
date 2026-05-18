@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Reviver — Al-Ghazali</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Scheherazade+New:wght@400;700&family=Josefin+Sans:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: #7a6230;
+    --ink: #0D0A06;
+    --parchment: #F5EDD8;
+    --parchment-dark: #E8D9B8;
+    --smoke: #2A2318;
+    --text-body: #3D3022;
+    --accent-teal: #2C6E6A;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: var(--ink);
+    color: var(--parchment);
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+  .cursor {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    width: 32px; height: 32px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.3s ease;
+    opacity: 0.6;
+  }
+  .geo-bg {
+    position: fixed;
+    inset: 0;
+    opacity: 0.04;
+    background-image:
+      repeating-linear-gradient(60deg, var(--gold) 0, var(--gold) 1px, transparent 0, transparent 50%),
+      repeating-linear-gradient(120deg, var(--gold) 0, var(--gold) 1px, transparent 0, transparent 50%),
+      repeating-linear-gradient(0deg, var(--gold) 0, var(--gold) 1px, transparent 0, transparent 50%);
+    background-size: 80px 80px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grain {
+    position: fixed;
+    inset: -200%;
+    width: 400%; height: 400%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 1;
+    animation: grain 8s steps(10) infinite;
+  }
+  @keyframes grain {
+    0%, 100% { transform: translate(0,0); }
+    10% { transform: translate(-2%,-3%); }
+    20% { transform: translate(3%,2%); }
+    30% { transform: translate(-1%,4%); }
+    40% { transform: translate(4%,-1%); }
+    50% { transform: translate(-3%,3%); }
+    60% { transform: translate(2%,-4%); }
+    70% { transform: translate(-4%,1%); }
+    80% { transform: translate(1%,-2%); }
+    90% { transform: translate(-2%,4%); }
+  }
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    z-index: 2;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .ornament {
+    font-family: 'Scheherazade New', serif;
+    font-size: 2.5rem;
+    color: var(--gold);
+    opacity: 0.7;
+    letter-spacing: 0.5rem;
+    animation: fadeDown 1.2s ease forwards;
+    animation-delay: 0.2s;
+    opacity: 0;
+  }
+  .arabic-title {
+    font-family: 'Scheherazade New', serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    color: var(--gold-light);
+    line-height: 1.1;
+    margin: 1rem 0 0.5rem;
+    animation: fadeDown 1.2s ease forwards;
+    animation-delay: 0.4s;
+    opacity: 0;
+    text-shadow: 0 0 80px rgba(201,168,76,0.3);
+  }
+  .english-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 3vw, 1.6rem);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.4em;
+    color: var(--parchment);
+    opacity: 0;
+    animation: fadeDown 1.2s ease forwards;
+    animation-delay: 0.6s;
+    text-transform: uppercase;
+  }
+  .divider {
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 2rem auto;
+    opacity: 0;
+    animation: fadeIn 1.2s ease forwards;
+    animation-delay: 0.8s;
+  }
+  .hero-desc {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+    font-weight: 300;
+    max-width: 580px;
+    line-height: 1.9;
+    color: rgba(245,237,216,0.75);
+    opacity: 0;
+    animation: fadeUp 1.2s ease forwards;
+    animation-delay: 1s;
+  }
+  .hero-meta {
+    margin-top: 1rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+    animation-delay: 1.3s;
+  }
+  .cta-group {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeUp 1s ease forwards;
+    animation-delay: 1.4s;
+  }
+  .btn-primary {
+    padding: 0.9rem 2.5rem;
+    background: var(--gold);
+    color: var(--ink);
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: none;
+    cursor: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold-light);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .btn-primary:hover::before { transform: translateX(0); }
+  .btn-primary span { position: relative; z-index: 1; }
+  .btn-secondary {
+    padding: 0.9rem 2.5rem;
+    background: transparent;
+    color: var(--gold);
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--gold-dim);
+    cursor: none;
+    transition: all 0.3s ease;
+  }
+  .btn-secondary:hover {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.05);
+  }
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+    animation-delay: 2s;
+  }
+  .scroll-hint span {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--gold-dim), transparent);
+    animation: scrollPulse 2s ease infinite;
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.2); }
+  }
+  .chat-section {
+    position: relative;
+    z-index: 2;
+    padding: 6rem 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold-dim), transparent);
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 300;
+    margin-bottom: 3rem;
+    line-height: 1.3;
+  }
+  .section-title em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+  .chat-container {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(201,168,76,0.15);
+    position: relative;
+    overflow: hidden;
+  }
+  .chat-container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .chat-header {
+    padding: 1.2rem 1.8rem;
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(201,168,76,0.03);
+  }
+  .chat-status {
+    width: 6px; height: 6px;
+    background: var(--accent-teal);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent-teal);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .chat-header-text {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(245,237,216,0.5);
+  }
+  .chat-header-right {
+    margin-left: auto;
+    font-family: 'Scheherazade New', serif;
+    font-size: 1.2rem;
+    color: var(--gold-dim);
+  }
+  .chat-messages {
+    padding: 2rem 1.8rem;
+    min-height: 320px;
+    max-height: 420px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold-dim) transparent;
+  }
+  .message {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    animation: fadeUp 0.4s ease forwards;
+  }
+  .message-role {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .message-content {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: rgba(245,237,216,0.9);
+    padding: 1rem 1.4rem;
+    background: rgba(255,255,255,0.02);
+    border-left: 2px solid rgba(201,168,76,0.2);
+    position: relative;
+  }
+  .message.user .message-content {
+    border-left-color: var(--accent-teal);
+    background: rgba(44,110,106,0.05);
+    color: rgba(245,237,216,0.7);
+    font-size: 0.95rem;
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 300;
+  }
+  .certainty-badge {
+    display: inline-block;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold-dim);
+    margin-top: 0.6rem;
+    font-family: 'Josefin Sans', sans-serif;
+  }
+  .source-tag {
+    font-size: 0.6rem;
+    color: var(--gold-dim);
+    font-family: 'Josefin Sans', sans-serif;
+    font-style: italic;
+    margin-top: 0.4rem;
+  }
+  .typing {
+    display: flex;
+    gap: 4px;
+    padding: 1rem 1.4rem;
+    background: rgba(255,255,255,0.02);
+    border-left: 2px solid rgba(201,168,76,0.2);
+    width: fit-content;
+  }
+  .typing span {
+    width: 5px; height: 5px;
+    background: var(--gold-dim);
+    border-radius: 50%;
+    animation: typingDot 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingDot {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+  .chat-input-area {
+    padding: 1.2rem 1.8rem;
+    border-top: 1px solid rgba(201,168,76,0.1);
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    background: rgba(201,168,76,0.02);
+  }
+  .chat-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+    color: var(--parchment);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    padding: 0.6rem 0;
+    outline: none;
+    resize: none;
+    line-height: 1.6;
+    transition: border-color 0.3s ease;
+    cursor: none;
+  }
+  .chat-input::placeholder {
+    color: rgba(201,168,76,0.25);
+    font-style: italic;
+  }
+  .chat-input:focus {
+    border-bottom-color: var(--gold);
+  }
+  .send-btn {
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: 0.6rem 1.2rem;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  .send-btn:hover {
+    background: var(--gold);
+    color: var(--ink);
+    border-color: var(--gold);
+  }
+  .send-btn:disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .suggestions {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+  .suggestion-chip {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(201,168,76,0.2);
+    color: rgba(245,237,216,0.5);
+    cursor: none;
+    transition: all 0.3s ease;
+    background: transparent;
+    text-align: left;
+  }
+  .suggestion-chip:hover {
+    border-color: var(--gold);
+    color: var(--parchment);
+    background: rgba(201,168,76,0.05);
+  }
+  .about-section {
+    position: relative;
+    z-index: 2;
+    padding: 6rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: start;
+  }
+  @media (max-width: 768px) {
+    .about-section { grid-template-columns: 1fr; gap: 3rem; }
+  }
+  .about-quote {
+    font-family: 'Scheherazade New', serif;
+    font-size: 2rem;
+    color: var(--gold);
+    line-height: 1.6;
+    margin: 1.5rem 0;
+    opacity: 0.8;
+    direction: rtl;
+  }
+  .about-quote-translation {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    color: rgba(245,237,216,0.5);
+    line-height: 1.8;
+    padding-left: 1rem;
+    border-left: 2px solid var(--gold-dim);
+  }
+  .about-body {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: rgba(245,237,216,0.7);
+    margin-bottom: 1.5rem;
+  }
+  .challenges-section {
+    position: relative;
+    z-index: 2;
+    padding: 4rem 2rem 8rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .challenges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.1);
+    margin-top: 3rem;
+  }
+  .challenge-card {
+    padding: 2rem;
+    background: var(--ink);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s ease;
+  }
+  .challenge-card:hover {
+    background: rgba(201,168,76,0.04);
+  }
+  .challenge-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 2px; height: 0;
+    background: var(--gold);
+    transition: height 0.4s ease;
+  }
+  .challenge-card:hover::before { height: 100%; }
+  .challenge-num {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    color: var(--gold-dim);
+    margin-bottom: 0.8rem;
+    font-family: 'Josefin Sans', sans-serif;
+  }
+  .challenge-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin-bottom: 0.8rem;
+    color: var(--parchment);
+  }
+  .challenge-desc {
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: rgba(245,237,216,0.45);
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 200;
+  }
+  .footer {
+    position: relative;
+    z-index: 2;
+    border-top: 1px solid rgba(201,168,76,0.1);
+    padding: 3rem 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .footer-left {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    font-style: italic;
+    color: rgba(245,237,216,0.3);
+  }
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+  }
+  .footer-link {
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  .footer-link:hover { color: var(--gold); }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .error-msg {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 0.75rem;
+    color: #c0392b;
+    padding: 0.5rem 1.4rem;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="geo-bg"></div>
+<div class="grain"></div>
+
+<section class="hero">
+  <div class="ornament">✦ ✦ ✦</div>
+  <h1 class="arabic-title">المُحيي</h1>
+  <p class="english-title">The Reviver</p>
+  <div class="divider"></div>
+  <p class="hero-desc">
+    Consult the mind of Abu Hamid Al-Ghazali — theologian, philosopher, mystic —
+    across his verified primary works. Ask what reason can establish. Ask what it cannot.
+  </p>
+  <p class="hero-meta">Born 1058 · Tus, Persia &nbsp;·&nbsp; Died 1111 · Tus, Persia &nbsp;·&nbsp; Revival of the Religious Sciences</p>
+  <div class="cta-group">
+    <a href="#consult" class="btn-primary"><span>Begin Consultation</span></a>
+    <a href="#about" class="btn-secondary">About This Work</a>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<section class="chat-section" id="consult">
+  <div class="section-label">Consultation</div>
+  <h2 class="section-title reveal">Ask the <em>question</em> reason alone cannot answer</h2>
+  <div class="chat-container reveal">
+    <div class="chat-header">
+      <div class="chat-status"></div>
+      <span class="chat-header-text">Al-Ghazali · Primary Sources Active</span>
+      <span class="chat-header-right">إحياء</span>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="message">
+        <div class="message-role">Al-Ghazali</div>
+        <div class="message-content">
+          Know that knowledge of the self is the key to knowledge of God. Whoever knows himself truly, knows his Lord.
+          Ask what is on your mind — but know that some questions have answers in reason, others in revelation, and others only in direct experience.
+          <div class="certainty-badge">Level 1 — Direct Position</div>
+          <div class="source-tag">Source: Ihya Ulum al-Din, Book of Knowledge · circa 1095</div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <textarea class="chat-input" id="chatInput" placeholder="Ask about consciousness, the limits of reason, the nature of the soul..." rows="2"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">Ask →</button>
+    </div>
+  </div>
+  <div class="suggestions" id="suggestions">
+    <button class="suggestion-chip" onclick="askSuggestion(this)">What are the limits of human reason?</button>
+    <button class="suggestion-chip" onclick="askSuggestion(this)">How do we distinguish true knowledge from opinion?</button>
+    <button class="suggestion-chip" onclick="askSuggestion(this)">What is the nature of the soul?</button>
+    <button class="suggestion-chip" onclick="askSuggestion(this)">Can an artificial mind be conscious?</button>
+    <button class="suggestion-chip" onclick="askSuggestion(this)">What caused your spiritual crisis?</button>
+  </div>
+</section>
+
+<section class="about-section" id="about">
+  <div class="about-left reveal">
+    <div class="section-label">The Scholar</div>
+    <h2 class="section-title">A mind at the<br><em>intersection</em></h2>
+    <div class="about-quote">الشكُّ لا يُزيله إلا اليقين</div>
+    <p class="about-quote-translation">"Doubt is not removed except by certainty" — and certainty has levels that the philosophers never mapped.</p>
+  </div>
+  <div class="about-right reveal">
+    <p class="about-body">Al-Ghazali stands alone in intellectual history as a man who mastered the tools of Greek philosophy — then turned those tools against philosophy itself, exposing the twenty propositions where reason overreaches its bounds.</p>
+    <p class="about-body">He then abandoned his prestigious position in Baghdad, wandered for eleven years in spiritual crisis, and returned a transformed man — writing the works that would define Islamic thought for centuries and influence Aquinas, Descartes, and Pascal across traditions.</p>
+    <p class="about-body">This system consults only verified primary sources. Every response carries a certainty classification — his direct position, principled inference, or the boundary where reason must stop and another faculty begins.</p>
+  </div>
+</section>
+
+<section class="challenges-section">
+  <div class="section-label reveal">How This Works</div>
+  <h2 class="section-title reveal">Built around six <em>hard problems</em></h2>
+  <div class="challenges-grid">
+    <div class="challenge-card reveal"><div class="challenge-num">01</div><div class="challenge-title">Conceptual Translation</div><div class="challenge-desc">Arabic concepts like Aql, Qalb, and Yaqin have no English equivalents. The system maps modern questions to their correct conceptual framework before retrieval.</div></div>
+    <div class="challenge-card reveal"><div class="challenge-num">02</div><div class="challenge-title">Three Voices</div><div class="challenge-desc">Al-Ghazali wrote as philosopher, mystic, and jurist — three distinct registers. The system identifies which voice is relevant and synthesizes when necessary.</div></div>
+    <div class="challenge-card reveal"><div class="challenge-num">03</div><div class="challenge-title">Historical Context</div><div class="challenge-desc">Every argument has an intellectual opponent — Ibn Sina, Al-Farabi. The system surfaces who he was arguing against so the reasoning becomes legible.</div></div>
+    <div class="challenge-card reveal"><div class="challenge-num">04</div><div class="challenge-title">Modern Bridging</div><div class="challenge-desc">Questions about AI consciousness, scientific limits, or ethical uncertainty are mapped to his documented framework — clearly labeled as principled inference.</div></div>
+    <div class="challenge-card reveal"><div class="challenge-num">05</div><div class="challenge-title">Certainty Gradient</div><div class="challenge-desc">Four levels: direct position, reasoned inference, principled extrapolation, and questions he explicitly placed beyond reason's reach.</div></div>
+    <div class="challenge-card reveal"><div class="challenge-num">06</div><div class="challenge-title">Transformation Arc</div><div class="challenge-desc">The early confident academic and the post-crisis wanderer held meaningfully different positions. The system knows the difference and tells you when it matters.</div></div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-left">Built on verified primary sources · Public domain translations only</div>
+  <div class="footer-links">
+    <a href="https://github.com" class="footer-link" target="_blank">GitHub</a>
+    <a href="https://linkedin.com" class="footer-link" target="_blank">LinkedIn</a>
+    <a href="https://x.com" class="footer-link" target="_blank">X</a>
+  </div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const cursorRing = document.getElementById('cursorRing');
+  let mouseX = 0, mouseY = 0;
+  let ringX = 0, ringY = 0;
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursor.style.left = mouseX - 4 + 'px';
+    cursor.style.top = mouseY - 4 + 'px';
+  });
+  function animateRing() {
+    ringX += (mouseX - ringX) * 0.12;
+    ringY += (mouseY - ringY) * 0.12;
+    cursorRing.style.left = ringX - 16 + 'px';
+    cursorRing.style.top = ringY - 16 + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+  document.querySelectorAll('button, a, textarea').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform = 'scale(2.5)';
+      cursorRing.style.transform = 'scale(1.5)';
+      cursorRing.style.opacity = '0.3';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.transform = 'scale(1)';
+      cursorRing.style.transform = 'scale(1)';
+      cursorRing.style.opacity = '0.6';
+    });
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // --- RAG Backend Integration ---
+  // Replace the old Claude API with your local RAG backend
+  async function callRAGBackend(userMessage) {
+    const apiUrl = 'http://localhost:8000/ask';
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: userMessage })
+      });
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
+      const data = await response.json();
+      return data.answer;
+    } catch (error) {
+      console.error('RAG backend error:', error);
+      return "The consultation could not be completed. Please ensure the backend server is running (python src/api.py).";
+    }
+  }
+
+  let conversationHistory = [];
+  let isLoading = false;
+
+  function parseResponse(text) {
+    const certaintyMatch = text.match(/\[CERTAINTY:\s*(.*?)\]/);
+    const sourceMatch = text.match(/\[SOURCE:\s*(.*?)\]/);
+    const cleanText = text
+      .replace(/\[CERTAINTY:.*?\]/g, '')
+      .replace(/\[SOURCE:.*?\]/g, '')
+      .trim();
+    return {
+      text: cleanText,
+      certainty: certaintyMatch ? certaintyMatch[1].trim() : null,
+      source: sourceMatch ? sourceMatch[1].trim() : null
+    };
+  }
+
+  function addMessage(role, text, certainty = null, source = null) {
+    const container = document.getElementById('chatMessages');
+    const msg = document.createElement('div');
+    msg.className = `message ${role === 'user' ? 'user' : ''}`;
+    let inner = `<div class="message-role">${role === 'user' ? 'You' : 'Al-Ghazali'}</div>
+      <div class="message-content">${text.replace(/\n/g, '<br>')}`;
+    if (certainty) inner += `<div class="certainty-badge">${certainty}</div>`;
+    if (source) inner += `<div class="source-tag">Source: ${source}</div>`;
+    inner += `</div>`;
+    msg.innerHTML = inner;
+    container.appendChild(msg);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function addTyping() {
+    const container = document.getElementById('chatMessages');
+    const typing = document.createElement('div');
+    typing.id = 'typingIndicator';
+    typing.className = 'message';
+    typing.innerHTML = `<div class="message-role">Al-Ghazali</div><div class="typing"><span></span><span></span><span></span></div>`;
+    container.appendChild(typing);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typingIndicator');
+    if (t) t.remove();
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const text = input.value.trim();
+    if (!text || isLoading) return;
+    document.getElementById('suggestions').style.display = 'none';
+    isLoading = true;
+    sendBtn.disabled = true;
+    input.value = '';
+    addMessage('user', text);
+    addTyping();
+    try {
+      const reply = await callRAGBackend(text);
+      removeTyping();
+      const parsed = parseResponse(reply);
+      addMessage('assistant', parsed.text, parsed.certainty, parsed.source);
+    } catch (err) {
+      removeTyping();
+      const container = document.getElementById('chatMessages');
+      const errEl = document.createElement('div');
+      errEl.className = 'error-msg';
+      errEl.textContent = 'The consultation could not be completed. Please try again.';
+      container.appendChild(errEl);
+    }
+    isLoading = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+
+  function askSuggestion(btn) {
+    document.getElementById('chatInput').value = btn.textContent;
+    sendMessage();
+  }
+  document.getElementById('chatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+</script>
+</body>
+</html>
