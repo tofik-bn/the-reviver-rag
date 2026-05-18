@@ -779,7 +779,7 @@
   // --- RAG Backend Integration ---
   // Replace the old Claude API with your local RAG backend
   async function callRAGBackend(userMessage) {
-    const apiUrl = 'http://localhost:8000/ask';
+    const apiUrl = 'https://the-reviver-rag-production.up.railway.app/ask';
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
