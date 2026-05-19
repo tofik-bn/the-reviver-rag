@@ -23,15 +23,13 @@ app.add_middleware(
 class QuestionRequest(BaseModel):
     question: str
 
-@app.get("/")
-def root():
-    return {"message": "The Reviver API is running. Send POST /ask with {'question': '...'}"}
-
 @app.post("/ask")
 def ask(req: QuestionRequest):
-    answer = ask_question(req.question)
-    return {"answer": answer}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    try:
+        from src.query import ask_question
+        answer = ask_question(req.question)
+        return {"answer": answer}
+    except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc()
+        return {"error": str(e), "trace": error_detail}, 500
