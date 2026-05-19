@@ -33,3 +33,10 @@ def ask(req: QuestionRequest):
         import traceback
         error_detail = traceback.format_exc()
         return {"error": str(e), "trace": error_detail}, 500
+        @app.get("/debug")
+def debug():
+    import os
+    return {
+        "has_groq_key": "GROQ_API_KEY" in os.environ,
+        "key_preview": os.environ.get("GROQ_API_KEY", "")[:10] if "GROQ_API_KEY" in os.environ else None
+    }
