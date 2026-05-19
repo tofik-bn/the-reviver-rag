@@ -781,19 +781,19 @@
   async function callRAGBackend(userMessage) {
     const apiUrl = 'https://the-reviver-rag-production.up.railway.app/ask';
     try {
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: userMessage })
-      });
-      if (!response.ok) throw new Error(`API error: ${response.status}`);
-      const data = await response.json();
-      return data.answer;
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: userMessage })
+        });
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        const data = await response.json();
+        return data.answer;
     } catch (error) {
-      console.error('RAG backend error:', error);
-      return "The consultation could not be completed. Please ensure the backend server is running (python src/api.py).";
+        console.error('Backend error:', error);
+        return "The consultation could not be completed. Please try again later.";
     }
-  }
+}
 
   let conversationHistory = [];
   let isLoading = false;
